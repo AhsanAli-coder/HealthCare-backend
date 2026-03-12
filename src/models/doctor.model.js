@@ -14,7 +14,6 @@ const availabilitySchema = new mongoose.Schema({
     required: true,
   },
 });
-
 const doctorSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
