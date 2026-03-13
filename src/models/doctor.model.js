@@ -1,51 +1,77 @@
 import mongoose from "mongoose";
 
-const availabilitySchema = new mongoose.Schema({
-  day: {
-    type: String,
-    required: true,
+const { Schema } = mongoose;
+
+const doctorSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true
+    },
+
+    specialization: {
+      type: String,
+      required: true,
+      trim: true
+    },
+
+    experience: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    consultationFee: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+
+    bio: {
+      type: String,
+      trim: true
+    },
+
+    averageRating: {
+      type: Number,
+      default: 0
+    },
+
+    totalReviews: {
+      type: Number,
+      default: 0
+    },
+
+    isApproved: {
+      type: Boolean,
+      default: false
+    },
+
+    availability: [
+      {
+        day: {
+          type: String,
+           required: true
+        },
+        startTime: {
+          type: String,
+           required: true
+        },
+        endTime: {
+          type: String,
+          required: true
+        }
+      }
+      
+    ]
   },
-  start: {
-    type: String,
-    required: true,
-  },
-  end: {
-    type: String,
-    required: true,
-  },
-});
-const doctorSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  },
-  specialization: {
-    type: String,
-    required: true,
-  },
-  experience: {
-    type: Number,
-    required: true,
-  },
-  consultationFee: {
-    type: Number,
-    required: true,
-  },
-  bio: {
-    type: String,
-  },
-  rating: {
-    type: Number,
-    default: 0,
-  },
-  isApproved: {
-    type: Boolean,
-    default: false,
-  },
-  availability: [availabilitySchema],
-});
+  {
+    timestamps: true
+  }
+);
 
 const Doctor = mongoose.model("Doctor", doctorSchema);
 
-export default Doctor;
+export { Doctor } ;

@@ -1,17 +1,19 @@
 import mongoose from "mongoose";
-
-const appointmentSchema = new mongoose.Schema(
+const { Schema } = mongoose;
+const appointmentSchema = new Schema(
   {
     doctorId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "Doctor",
-      required: true
+      required: true,
+      index: true
     },
 
     patientId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
+      index: true
     },
 
     date: {
@@ -42,7 +44,8 @@ const appointmentSchema = new mongoose.Schema(
     },
 
     chatRoomId: {
-      type: String
+      type: String,
+      index: true
     }
   },
   {
@@ -50,6 +53,10 @@ const appointmentSchema = new mongoose.Schema(
   }
 );
 
+// prevent duplicate booking for same slot
+appointmentSchema.index(
+  { doctorId: 1, date: 1, startTime: 1 },
+  { unique: true }
+);
 const Appointment = mongoose.model("Appointment", appointmentSchema);
-
 export default Appointment;

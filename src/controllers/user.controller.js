@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import {Doctor} from "../models/doctor.model.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefereshTokens = async (userId) => {
@@ -62,7 +63,16 @@ const registerUser = asyncHandler(async (req, res) => {
     }
   }
 
-  const user = await User.create({
+  // const user = await User.create({
+  //   name,
+  //   email,
+  //   password,
+  //   phone,
+  //   role: userRole,
+  //   profilePhoto: profilePhotoUrl || "",
+  //   status: userRole === "doctor" ? "pending" : "active",
+  // });
+const user = await User.create({
     name,
     email,
     password,
@@ -70,8 +80,19 @@ const registerUser = asyncHandler(async (req, res) => {
     role: userRole,
     profilePhoto: profilePhotoUrl || "",
     status: userRole === "doctor" ? "pending" : "active",
-  });
+});
+let  doctor = null;
+// NEW BRIDGE LOGIC: Initialize Doctor Profile
+if (userRole === "doctor") {
+    doctor= await Doctor.create({
+        userId: user._id,
+        specialization: "General Physician", // Placeholder
+        experience: 0,                       // Placeholder
+        consultationFee: 0,                  // Placeholder
+    });
+}
 
+ console.log("doctor", doctor);
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
