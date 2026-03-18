@@ -1,35 +1,33 @@
 import mongoose from "mongoose";
-
 const { Schema } = mongoose;
-
 const messageSchema = new Schema(
   {
     appointmentId: {
       type: Schema.Types.ObjectId,
       ref: "Appointment",
       required: true,
-      index: true
+      index: true,
     },
 
     senderId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true
+      required: true,
     },
 
     text: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
 
     isRead: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   {
-    timestamps: true
+    timestamps: true,
   }
 );
 

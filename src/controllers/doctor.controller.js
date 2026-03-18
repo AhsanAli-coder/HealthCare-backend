@@ -48,4 +48,17 @@ const updateAvailability = asyncHandler(async (req, res) => {
     );
 });
 
-export { updateDoctorProfile, updateAvailability };
+const getMyProfile = asyncHandler(async (req, res) => {
+  const doctor = await Doctor.findOne({ userId: req.user._id }).populate("userId", "name email profilePhoto");
+
+  if (!doctor) {
+    throw new ApiError(404, "Doctor profile not found");
+  }
+
+  return res.status(200).json(
+    new ApiResponse(200, doctor, "Doctor profile fetched successfully")
+  );
+});
+
+
+export { updateDoctorProfile, updateAvailability,getMyProfile } ;

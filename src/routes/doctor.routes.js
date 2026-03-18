@@ -3,14 +3,17 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { verifyRole } from "../middlewares/auth.middleware.js";
 import { 
     updateDoctorProfile, 
-    updateAvailability 
+    updateAvailability,
+    getMyProfile
 } from "../controllers/doctor.controller.js";
 
 const router = Router();
 
 // All routes here require the user to be logged in
-router.use(verifyJWT); 
+//router.use(verifyJWT); 
 
+
+router.route("/me").get(verifyJWT,verifyRole(["doctor"]),getMyProfile);
 // Route: PATCH /api/v1/doctors/update-profile
 router.route("/update-profile").patch(verifyJWT,verifyRole(["doctor"]),updateDoctorProfile);
 
