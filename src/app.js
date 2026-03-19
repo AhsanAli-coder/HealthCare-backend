@@ -23,9 +23,11 @@ app.listen(process.env.PORT, () => {
 import userRoutes from "./routes/user.routes.js";
 import doctorRoutes from "./routes/doctor.routes.js"; // Add this line
 import patientRoutes from "./routes/patient.routes.js";   
+import appointmentRoutes from "./routes/appointment.roures.js";
 //routes declaration
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/doctors", doctorRoutes); // Add this line
 //localhost:8000/users/
 app.use("/api/v1/patients", patientRoutes);
+app.use("/api/v1/appointments", appointmentRoutes);
 export { app };

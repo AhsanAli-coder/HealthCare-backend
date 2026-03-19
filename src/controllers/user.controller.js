@@ -3,7 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import {Doctor} from "../models/doctor.model.js";
+import { Doctor } from "../models/doctor.model.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefereshTokens = async (userId) => {
@@ -72,7 +72,7 @@ const registerUser = asyncHandler(async (req, res) => {
   //   profilePhoto: profilePhotoUrl || "",
   //   status: userRole === "doctor" ? "pending" : "active",
   // });
-const user = await User.create({
+  const user = await User.create({
     name,
     email,
     password,
@@ -80,19 +80,19 @@ const user = await User.create({
     role: userRole,
     profilePhoto: profilePhotoUrl || "",
     status: userRole === "doctor" ? "pending" : "active",
-});
-let  doctor = null;
-// NEW BRIDGE LOGIC: Initialize Doctor Profile
-if (userRole === "doctor") {
-    doctor= await Doctor.create({
-        userId: user._id,
-        specialization: "General Physician", // Placeholder
-        experience: 0,                       // Placeholder
-        consultationFee: 0,                  // Placeholder
+  });
+  let doctor = null;
+  // NEW BRIDGE LOGIC: Initialize Doctor Profile
+  if (userRole === "doctor") {
+    doctor = await Doctor.create({
+      userId: user._id,
+      specialization: "General Physician", // Placeholder
+      experience: 0, // Placeholder
+      consultationFee: 0, // Placeholder
     });
-}
+  }
 
- console.log("doctor", doctor);
+  console.log("doctor", doctor);
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
   );
@@ -284,8 +284,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
 
-
-const updateUserAvatar = asyncHandler(async (req, res) => {
+const updateProfilePicture = asyncHandler(async (req, res) => {
   const profilePictureLocalPath = req.file?.path;
 
   if (!profilePictureLocalPath) {
@@ -302,7 +301,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        avatar: profilePicture.url,
+        profilePicture: profilePicture.url,
       },
     },
     { new: true }
@@ -310,9 +309,8 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "Avatar image updated successfully"));
+    .json(new ApiResponse(200, user, "profile image updated successfully"));
 });
-
 
 export {
   registerUser,
@@ -321,5 +319,6 @@ export {
   refreshAccessToken,
   changeCurrentPassword,
   getCurrentUser,
-  updateAccountDetails
+  updateAccountDetails,
+  updateProfilePicture
 };

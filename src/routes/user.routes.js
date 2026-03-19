@@ -5,6 +5,8 @@ import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { logoutUser } from "../controllers/user.controller.js";
 import { refreshAccessToken } from "../controllers/user.controller.js"; 
+import { updateAccountDetails } from "../controllers/user.controller.js";
+import { updateProfilePicture } from "../controllers/user.controller.js";
 const router = Router();
 //localhost:8000/users/registers
 //localhost:8000/users/login
@@ -27,5 +29,17 @@ router.route("/login").post(loginUser);
 router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/refresh-token").post(refreshAccessToken);
+// Add these to user.routes.js
+router.route("/update-account").patch(verifyJWT, updateAccountDetails);
+router.route("/update-profile-picture").patch(verifyJWT, upload.fields([
+    {
+      name: "profilePhoto",
+      maxCount: 1,
+    },
+    {
+      name: "coverImage",
+      maxCount: 1,
+    },
+  ]), updateProfilePicture);
 
 export default router;
