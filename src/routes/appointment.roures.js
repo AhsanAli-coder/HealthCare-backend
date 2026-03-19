@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { verifyJWT, verifyRole } from "../middlewares/auth.middleware.js";
 import {
-    bookAppointment,
-    getPatientAppointments,
-    getDoctorAppointments,
-    updateAppointmentStatus
+  bookAppointment,
+  getPatientAppointments,
+  getDoctorAppointments,
+  updateAppointmentStatus,
 } from "../controllers/appointment.controller.js";
 
 const router = Router();
@@ -20,6 +20,8 @@ router.route("/patient").get(verifyRole(["patient"]), getPatientAppointments);
 router.route("/doctor").get(verifyRole(["doctor"]), getDoctorAppointments);
 
 // Shared Route (Both Patients and Doctors update status, but controller handles the rules)
-router.route("/:appointmentId/status").patch(verifyRole(["patient", "doctor"]), updateAppointmentStatus);
+router
+  .route("/:appointmentId/status")
+  .patch(verifyRole(["patient", "doctor"]), updateAppointmentStatus);
 
 export default router;
