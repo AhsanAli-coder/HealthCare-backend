@@ -24,16 +24,6 @@ const generateAccessAndRefereshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-  // get user details from frontend
-  // validation - not empty
-  // check if user already exists: username, email
-  // check for images, check for avatar
-  // upload them to cloudinary, avatar
-  // create user object - create entry in db
-  // remove password and refresh token field from response
-  // check for user creation
-  // return res
-
   const { name, email, password, phone, role } = req.body;
 
   const allowedRoles = ["patient", "doctor"];
@@ -62,16 +52,6 @@ const registerUser = asyncHandler(async (req, res) => {
       profilePhotoUrl = uploadedPhoto.url;
     }
   }
-
-  // const user = await User.create({
-  //   name,
-  //   email,
-  //   password,
-  //   phone,
-  //   role: userRole,
-  //   profilePhoto: profilePhotoUrl || "",
-  //   status: userRole === "doctor" ? "pending" : "active",
-  // });
   const user = await User.create({
     name,
     email,
@@ -82,7 +62,6 @@ const registerUser = asyncHandler(async (req, res) => {
     status: userRole === "doctor" ? "pending" : "active",
   });
   let doctor = null;
-  // NEW BRIDGE LOGIC: Initialize Doctor Profile
   if (userRole === "doctor") {
     doctor = await Doctor.create({
       userId: user._id,
@@ -107,12 +86,7 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-  // req body -> data
-  // username or email
-  //find the user
-  //password check
-  //access and referesh token
-  //send cookie
+ 
 
   const { email, password } = req.body;
 

@@ -7,7 +7,7 @@ const reviewSchema = new Schema(
     appointmentId: {
       type: Schema.Types.ObjectId,
       ref: "Appointment",
-      unique: true, // One review per appointment
+      unique: true, 
       required: true,
       index: true
     },

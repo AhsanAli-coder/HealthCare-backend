@@ -4,9 +4,9 @@ const { Schema } = mongoose;
 
 const medicineSchema = new Schema({
   name: { type: String, required: true, trim: true },
-  dosage: { type: String, required: true, trim: true }, // e.g., "1-0-1" or "500mg"
-  duration: { type: String, required: true, trim: true }, // e.g., "5 days"
-  instructions: { type: String, trim: true } // e.g., "After meals"
+  dosage: { type: String, required: true, trim: true }, 
+  duration: { type: String, required: true, trim: true }, 
+  instructions: { type: String, trim: true } 
 });
 
 const prescriptionSchema = new Schema(
@@ -15,7 +15,7 @@ const prescriptionSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "Appointment",
       required: true,
-      unique: true // one prescription per appointment
+      unique: true 
     },
 
     doctorId: {
@@ -45,12 +45,11 @@ const prescriptionSchema = new Schema(
       trim: true
     },
 
-    pdfUrl: { type: String } // Optional link to PDF
+    pdfUrl: { type: String } 
   },
   { timestamps: true }
 );
 
-// Helpful indexes
 prescriptionSchema.index({ doctorId: 1, createdAt: -1 });
 prescriptionSchema.index({ patientId: 1, createdAt: -1 });
 

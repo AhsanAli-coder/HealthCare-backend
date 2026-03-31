@@ -4,10 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import Prescription from "../models/prescription.model.js";
 import Appointment from "../models/appointment.model.js";
 
-/**
- * @description Create a prescription for an appointment (Doctor only)
- * @route POST /api/v1/prescriptions/:appointmentId
- */
+
 const createPrescription = asyncHandler(async (req, res) => {
     const { appointmentId } = req.params;
     const { diagnosis, medicines, advice } = req.body;
@@ -22,11 +19,9 @@ const createPrescription = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Appointment not found");
     }
 
-    // Security Check: Ensure the logged-in doctor is the one who took this appointment
     const doctorId = appointment.doctorId.toString();
-    // Note: We'd normally check against doctor profile ID, but for simplicity assuming the route ensures doctor role.
+   
 
-    // Check if prescription already exists
     const existingPrescription = await Prescription.findOne({ appointmentId });
     if (existingPrescription) {
         throw new ApiError(400, "A prescription already exists for this appointment");
@@ -37,11 +32,10 @@ const createPrescription = asyncHandler(async (req, res) => {
         doctorId: appointment.doctorId,
         patientId: appointment.patientId,
         diagnosis,
-        medicines, // Array of { name, dosage, duration, instructions }
+        medicines, 
         advice
     });
 
-    // Optional: Auto-mark appointment as completed once prescription is written
     appointment.status = "completed";
     await appointment.save();
 
@@ -50,10 +44,8 @@ const createPrescription = asyncHandler(async (req, res) => {
     );
 });
 
-/**
- * @description Get prescription by Appointment ID (Patient & Doctor)
- * @route GET /api/v1/prescriptions/:appointmentId
- */
+
+
 const getPrescription = asyncHandler(async (req, res) => {
     const { appointmentId } = req.params;
 

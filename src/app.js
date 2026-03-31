@@ -15,24 +15,29 @@ app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("hallo health backend");
 });
-app.listen(process.env.PORT, () => {
-  console.log(`server is running for health  at port ${process.env.PORT}`);
-});
+// app.listen(process.env.PORT, () => {
+//   console.log(`server is running for health  at port ${process.env.PORT}`);
+// });
 
 //routes import
 import userRoutes from "./routes/user.routes.js";
-import doctorRoutes from "./routes/doctor.routes.js"; // Add this line
+import doctorRoutes from "./routes/doctor.routes.js"; 
 import patientRoutes from "./routes/patient.routes.js";   
 import appointmentRoutes from "./routes/appointment.roures.js";
 import prescriptionRoutes from "./routes/prescription.routes.js";
-import documentRoutes from "./routes/document.routes.js"; // Add this line        
+import documentRoutes from "./routes/document.routes.js";     
+import reviewRoutes from "./routes/review.routes.js";  
+import messageRoutes from "./routes/message.routes.js";
 //routes declaration
 app.use("/api/v1/users", userRoutes);
-app.use("/api/v1/doctors", doctorRoutes); // Add this line
-//localhost:8000/users/
+app.use("/api/v1/doctors", doctorRoutes); 
+
 app.use("/api/v1/patients", patientRoutes);
 app.use("/api/v1/appointments", appointmentRoutes);
 app.use("/api/v1/prescriptions", prescriptionRoutes); 
-app.use("/api/v1/documents", documentRoutes); // Add this line
+app.use("/api/v1/documents", documentRoutes); 
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/messages", messageRoutes);
+
 
 export { app };

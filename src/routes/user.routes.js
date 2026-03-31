@@ -29,7 +29,6 @@ router.route("/login").post(loginUser);
 router.route("/logout").post(verifyJWT, logoutUser);
 
 router.route("/refresh-token").post(refreshAccessToken);
-// Add these to user.routes.js
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
 router.route("/update-profile-picture").patch(verifyJWT, upload.fields([
     {

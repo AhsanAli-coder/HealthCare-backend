@@ -31,7 +31,6 @@ const messageSchema = new Schema(
   }
 );
 
-// index for faster chat loading
 messageSchema.index({ appointmentId: 1, createdAt: 1 });
 
 const Message = mongoose.model("Message", messageSchema);

@@ -1,16 +1,26 @@
 import dotenv from "dotenv";
 import connectDB from "./db/index.js";
 import { app } from "./app.js";
+import http from "http"; // Import native Node http module
+import { initializeSocket } from "./socket/socket.js";
 
 dotenv.config({
   path: "./env",
 });
+const server = http.createServer(app);
+initializeSocket(server);
 connectDB()
   .then(() => {
-    app.listen(process.env.PORT || 8000, () => {
+    // app.listen(process.env.PORT || 8000, () => {
+    //   console.log(`⚙️   Server is running at port : ${process.env.PORT}`);
+    //   console.log(`🔌 Socket.IO is active and listening for connections`);
+    // });
+    server.listen(process.env.PORT || 8000, () => {
       console.log(`⚙️   Server is running at port : ${process.env.PORT}`);
+      console.log(`🔌 Socket.IO is active and listening for connections`);
     });
   })
   .catch((err) => {
     console.log("MONGO db connection failed !!! ", err);
   });
+

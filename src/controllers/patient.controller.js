@@ -3,38 +3,29 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { Doctor } from "../models/doctor.model.js";
 
-/**
- * @description Browse and Filter Doctors (FR-003)
- * @route GET /api/v1/patients/browse
- */
+//browse all doctors with filters and search FR 003
 const getAllDoctors = asyncHandler(async (req, res) => {
   const { specialization, minRating, minExperience, search, day } = req.query;
 
-  // Initial Filter: Only show doctors approved by Admin
   let query = { isApproved: true };
 
-  // 1. Filter by Specialization (e.g., "Cardiology")
   if (specialization) {
     query.specialization = { $regex: specialization, $options: "i" };
   }
 
-  // 2. Filter by Rating (e.g., "4 stars and above")
   if (minRating) {
     query.averageRating = { $gte: Number(minRating) };
   }
 
-  // 3. Filter by Experience (e.g., "At least 5 years")
   if (minExperience) {
     query.experience = { $gte: Number(minExperience) };
   }
 
-  // 4. Filter by Availability Day (e.g., "Monday")
-  // Since availability is an array of objects, Mongoose searches inside the array
+
   if (day) {
     query["availability.day"] = { $regex: day, $options: "i" };
   }
 
-  // 5. General Search (Search in Bio or Specialization)
   if (search) {
     query.$or = [
       { specialization: { $regex: search, $options: "i" } },
@@ -42,7 +33,6 @@ const getAllDoctors = asyncHandler(async (req, res) => {
     ];
   }
 
-  // Fetch doctors and "populate" details from the User model (Name, Email, Photo)
   const doctors = await Doctor.find(query)
     .populate("userId", "name profilePhoto email")
     .sort({ averageRating: -1 }); // High-rated doctors show up first
@@ -52,10 +42,7 @@ const getAllDoctors = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, doctors, "Doctors fetched successfully"));
 });
 
-/**
- * @description Get Details of a Single Doctor
- * @route GET /api/v1/patients/doctor/:doctorId
- */
+
 const getDoctorDetails = asyncHandler(async (req, res) => {
   const { doctorId } = req.params;
 

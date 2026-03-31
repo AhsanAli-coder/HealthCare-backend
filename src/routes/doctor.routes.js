@@ -9,15 +9,12 @@ import {
 
 const router = Router();
 
-// All routes here require the user to be logged in
-//router.use(verifyJWT); 
+
 
 
 router.route("/me").get(verifyJWT,verifyRole(["doctor"]),getMyProfile);
-// Route: PATCH /api/v1/doctors/update-profile
 router.route("/update-profile").patch(verifyJWT,verifyRole(["doctor"]),updateDoctorProfile);
 
-// Route: PATCH /api/v1/doctors/availability
 router.route("/availability").patch(verifyJWT,verifyRole(["doctor"]),updateAvailability);
 
 export default router;

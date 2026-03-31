@@ -53,7 +53,7 @@ const appointmentSchema = new Schema(
   }
 );
 
-// prevent duplicate booking for same slot
+// prevent the duplicate booking for same slot
 appointmentSchema.index(
   { doctorId: 1, date: 1, startTime: 1 },
   { unique: true }
