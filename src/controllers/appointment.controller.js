@@ -145,11 +145,48 @@ const updateAppointmentStatus = asyncHandler(async (req, res) => {
         throw new ApiError(403, "You are not authorized to update this appointment");
     }
 
-    if (isPatient && status !== "cancelled") {
-        throw new ApiError(403, "Patients can only cancel appointments.");
+    // Basic transition guards (applies to both roles)
+    if (["completed", "cancelled", "rejected"].includes(appointment.status)) {
+        throw new ApiError(400, `Cannot update a ${appointment.status} appointment`);
     }
-    if (isDoctor && status === "cancelled") {
-        throw new ApiError(403, "Doctors must use 'rejected' instead of 'cancelled'.");
+
+    if (isPatient) {
+        if (status !== "cancelled") {
+            throw new ApiError(403, "Patients can only cancel appointments.");
+        }
+
+        // Cancellation policy:
+        // - Always allow cancel while pending (not yet confirmed)
+        // - If confirmed, only allow if >= 24 hours before startAt
+        if (appointment.status === "pending") {
+            // ok
+        } else if (appointment.status === "confirmed") {
+            if (!appointment.startAt) {
+                throw new ApiError(400, "Cannot evaluate cancellation window for this appointment");
+            }
+            const hoursLeft = DateTime.fromJSDate(appointment.startAt, { zone: "utc" })
+                .diff(DateTime.utc(), "hours").hours;
+            if (hoursLeft < 24) {
+                throw new ApiError(400, "You can only cancel a confirmed appointment at least 24 hours before start time");
+            }
+        }
+    }
+
+    if (isDoctor) {
+        if (status === "cancelled") {
+            throw new ApiError(403, "Doctors must use 'rejected' instead of 'cancelled'.");
+        }
+
+        // Doctor actions should be meaningful based on current state
+        if (status === "confirmed" && appointment.status !== "pending") {
+            throw new ApiError(400, "Only pending appointments can be confirmed");
+        }
+        if (status === "rejected" && appointment.status !== "pending") {
+            throw new ApiError(400, "Only pending appointments can be rejected");
+        }
+        if (status === "completed" && appointment.status !== "confirmed") {
+            throw new ApiError(400, "Only confirmed appointments can be completed");
+        }
     }
 
     appointment.status = status;
