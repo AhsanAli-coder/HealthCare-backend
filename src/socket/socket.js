@@ -5,6 +5,8 @@ import { User } from "../models/user.model.js";
 import Appointment from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { DateTime } from "luxon";
+import Notification from "../models/notification.model.js";
+import { setIO } from "./io.js";
 
 async function isAuthorizedForAppointment({ appointmentId, user }) {
   const appointment = await Appointment.findById(appointmentId).select(
@@ -55,6 +57,7 @@ export const initializeSocket = (server) => {
 
   // Make 'io' globally available so we can trigger notifications from our Express Controllers later!
   server.io = io;
+  setIO(io);
 
   // Authenticate sockets with the same JWT as REST
   io.use(async (socket, next) => {
@@ -163,6 +166,35 @@ export const initializeSocket = (server) => {
         });
         const populated = await newMessage.populate("senderId", "name profilePhoto role");
         io.to(String(appointmentId)).emit("receive_message", populated);
+
+        // Create + emit notification to the other participant
+        try {
+          const appointment = result.appointment;
+          const senderIdStr = String(socket.user._id);
+
+          let recipientUserId = null;
+          if (String(appointment.patientId) === senderIdStr) {
+            // sender is patient -> notify doctor user
+            const doctorProfile = await Doctor.findById(appointment.doctorId).select("userId");
+            if (doctorProfile?.userId) recipientUserId = doctorProfile.userId;
+          } else {
+            // sender is doctor -> notify patient
+            recipientUserId = appointment.patientId;
+          }
+
+          if (recipientUserId) {
+            const notification = await Notification.create({
+              userId: recipientUserId,
+              type: "new_message",
+              message: "You have a new message",
+              relatedAppointmentId: appointmentId,
+            });
+            io.to(String(recipientUserId)).emit("notification", notification);
+          }
+        } catch (_) {
+          // don't fail message send if notification fails
+        }
+
         if (typeof ack === "function") ack({ ok: true, message: populated });
       } catch (error) {
         console.error("❌ Error saving message:", error);

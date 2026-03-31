@@ -28,6 +28,8 @@ import prescriptionRoutes from "./routes/prescription.routes.js";
 import documentRoutes from "./routes/document.routes.js";     
 import reviewRoutes from "./routes/review.routes.js";  
 import messageRoutes from "./routes/message.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 //routes declaration
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/doctors", doctorRoutes); 
@@ -38,6 +40,8 @@ app.use("/api/v1/prescriptions", prescriptionRoutes);
 app.use("/api/v1/documents", documentRoutes); 
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 
 export { app };

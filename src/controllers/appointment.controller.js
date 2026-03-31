@@ -11,6 +11,7 @@ import {
     getDayKeyForDate,
     normalizeAvailabilityDay
 } from "../utils/slots.utils.js";
+import { createAndEmitNotification } from "../utils/notification.utils.js";
 
 const bookAppointment = asyncHandler(async (req, res) => {
     const { doctorId, date, startTime, endTime, startAt, endAt } = req.body;
@@ -73,6 +74,16 @@ const bookAppointment = asyncHandler(async (req, res) => {
         status: "pending", 
         paymentStatus: "pending"
     });
+
+    // Notify doctor about new booking request
+    if (doctor?.userId) {
+        await createAndEmitNotification({
+            userId: doctor.userId,
+            type: "appointment_update",
+            message: "New appointment request received",
+            relatedAppointmentId: appointment._id
+        });
+    }
 
     return res.status(201).json(
         new ApiResponse(201, appointment, "Appointment booked successfully. Waiting for doctor's approval.")
@@ -191,6 +202,29 @@ const updateAppointmentStatus = asyncHandler(async (req, res) => {
 
     appointment.status = status;
     await appointment.save();
+
+    // Notify the other side about status change
+    if (status === "confirmed" || status === "rejected") {
+        await createAndEmitNotification({
+            userId: appointment.patientId,
+            type: "appointment_update",
+            message: `Your appointment was ${status}`,
+            relatedAppointmentId: appointment._id
+        });
+    }
+
+    if (status === "cancelled") {
+        const doctorProfileForNotify = await Doctor.findById(appointment.doctorId).select("userId");
+        if (doctorProfileForNotify?.userId) {
+            await createAndEmitNotification({
+                userId: doctorProfileForNotify.userId,
+                type: "appointment_update",
+                message: "An appointment was cancelled by the patient",
+                relatedAppointmentId: appointment._id
+            });
+        }
+    }
+
     return res.status(200).json(
         new ApiResponse(200, appointment, `Appointment status updated to ${status}`)
     );
