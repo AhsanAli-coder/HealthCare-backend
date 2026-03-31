@@ -5,7 +5,6 @@ import Appointment from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.model.js";
 import { User } from "../models/user.model.js";
 
-
 const bookAppointment = asyncHandler(async (req, res) => {
     const { doctorId, date, startTime, endTime } = req.body;
     const patientId = req.user._id;

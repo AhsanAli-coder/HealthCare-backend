@@ -5,9 +5,9 @@ import { verifyRole } from "../middlewares/auth.middleware.js";
 const router = Router();
 router.use(verifyJWT);
 
-router.route("/browse").get(verifyRole("patient"), getAllDoctors);
+router.route("/browse").get(verifyRole(["patient"]), getAllDoctors);
 
 // View specific doctor details (Public)
-router.route("/doctor/:doctorId").get(verifyRole("patient"),getDoctorDetails);
+router.route("/doctor/:doctorId").get(verifyRole(["patient"]), getDoctorDetails);
 
 export default router;

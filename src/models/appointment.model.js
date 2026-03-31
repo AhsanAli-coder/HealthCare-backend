@@ -31,6 +31,19 @@ const appointmentSchema = new Schema(
       required: true
     },
 
+    // Canonical appointment time in UTC. Prefer these fields for all logic.
+    startAt: {
+      type: Date,
+      required: true,
+      index: true
+    },
+
+    endAt: {
+      type: Date,
+      required: true,
+      index: true
+    },
+
     status: {
       type: String,
       enum: ["pending", "confirmed", "rejected", "completed", "cancelled"],
@@ -58,5 +71,9 @@ appointmentSchema.index(
   { doctorId: 1, date: 1, startTime: 1 },
   { unique: true }
 );
+
+// Fast overlap queries per doctor and time range
+appointmentSchema.index({ doctorId: 1, startAt: 1, endAt: 1 });
+
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 export default Appointment;
