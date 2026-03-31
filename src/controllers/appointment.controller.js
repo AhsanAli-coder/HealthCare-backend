@@ -3,19 +3,51 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Appointment from "../models/appointment.model.js";
 import { Doctor } from "../models/doctor.model.js";
-import { User } from "../models/user.model.js";
+import { parseDateTimeFromClient, assertValidTimeRange } from "../utils/time.utils.js";
+import { DateTime } from "luxon";
+import {
+    filterSlotsByOverlaps,
+    generateSlotsForDay,
+    getDayKeyForDate,
+    normalizeAvailabilityDay
+} from "../utils/slots.utils.js";
 
 const bookAppointment = asyncHandler(async (req, res) => {
-    const { doctorId, date, startTime, endTime } = req.body;
+    const { doctorId, date, startTime, endTime, startAt, endAt } = req.body;
     const patientId = req.user._id;
 
-    if (!doctorId || !date || !startTime || !endTime) {
-        throw new ApiError(400, "All fields (doctorId, date, startTime, endTime) are required");
+    if (!doctorId) {
+        throw new ApiError(400, "doctorId is required");
     }
 
     const doctor = await Doctor.findById(doctorId);
     if (!doctor || !doctor.isApproved) {
         throw new ApiError(404, "Doctor not found or not approved for bookings");
+    }
+
+    const { startAtUtc, endAtUtc } = parseDateTimeFromClient({
+        date,
+        startTime,
+        endTime,
+        startAt,
+        endAt,
+        timezone: req.user?.timezone
+    });
+    assertValidTimeRange(startAtUtc, endAtUtc);
+
+    if (startAtUtc.getTime() < Date.now()) {
+        throw new ApiError(400, "Cannot book an appointment in the past");
+    }
+
+    const overlapping = await Appointment.findOne({
+        doctorId,
+        status: { $in: ["pending", "confirmed"] },
+        startAt: { $lt: endAtUtc },
+        endAt: { $gt: startAtUtc }
+    });
+
+    if (overlapping) {
+        throw new ApiError(409, "This time range overlaps an existing booking. Please choose another slot.");
     }
 
    
@@ -36,6 +68,8 @@ const bookAppointment = asyncHandler(async (req, res) => {
         date,
         startTime,
         endTime,
+        startAt: startAtUtc,
+        endAt: endAtUtc,
         status: "pending", 
         paymentStatus: "pending"
     });
@@ -61,7 +95,7 @@ const getPatientAppointments = asyncHandler(async (req, res) => {
             path: "doctorId",
             populate: { path: "userId", select: "name profilePhoto email phone" }
         })
-        .sort({ date: 1, startTime: 1 });
+        .sort({ startAt: 1 });
 
     console.log("4. Successfully populated appointments!");
     
@@ -80,7 +114,7 @@ const getDoctorAppointments = asyncHandler(async (req, res) => {
 
     const appointments = await Appointment.find({ doctorId: doctorProfile._id })
         .populate("patientId", "name profilePhoto email phone")
-        .sort({ date: 1, startTime: 1 });
+        .sort({ startAt: 1 });
 
     return res.status(200).json(
         new ApiResponse(200, appointments, "Doctor appointments fetched successfully")
@@ -125,9 +159,65 @@ const updateAppointmentStatus = asyncHandler(async (req, res) => {
     );
 });
 
+const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
+    const { doctorId } = req.params;
+    const { date, tz, slotMinutes, bufferMinutes } = req.query;
+
+    if (!doctorId) throw new ApiError(400, "doctorId is required");
+    if (!date) throw new ApiError(400, "date is required (YYYY-MM-DD)");
+
+    const timezone = tz || req.user?.timezone || "UTC";
+    const dayKey = getDayKeyForDate({ date, timezone });
+    if (!dayKey) throw new ApiError(400, "Invalid date format. Expected YYYY-MM-DD");
+
+    const doctor = await Doctor.findById(doctorId);
+    if (!doctor || !doctor.isApproved) {
+        throw new ApiError(404, "Doctor not found or not approved");
+    }
+
+    const availabilityForDay = (doctor.availability || []).filter((a) => {
+        const normalized = normalizeAvailabilityDay(a.day);
+        return normalized === dayKey;
+    });
+
+    const allSlots = generateSlotsForDay({
+        date,
+        timezone,
+        availabilityForDay,
+        slotMinutes: slotMinutes ?? 30,
+        bufferMinutes: bufferMinutes ?? 0
+    });
+
+    // Past slot filtering
+    const nowUtc = DateTime.utc();
+    const futureSlots = allSlots.filter((s) => DateTime.fromISO(s.startAtUtc, { zone: "utc" }) > nowUtc);
+
+    // Fetch doctor's existing appointments for that UTC day range
+    const dayStartUtc = DateTime.fromFormat(date, "yyyy-MM-dd", { zone: timezone }).startOf("day").toUTC();
+    const dayEndUtc = dayStartUtc.plus({ days: 1 });
+
+    const existing = await Appointment.find({
+        doctorId,
+        status: { $in: ["pending", "confirmed"] },
+        startAt: { $lt: dayEndUtc.toJSDate() },
+        endAt: { $gt: dayStartUtc.toJSDate() }
+    }).select("startAt endAt");
+
+    const availableSlots = filterSlotsByOverlaps(futureSlots, existing);
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            { doctorId, date, timezone, dayKey, slotMinutes: Number(slotMinutes ?? 30), bufferMinutes: Number(bufferMinutes ?? 0), slots: availableSlots },
+            "Available slots fetched successfully"
+        )
+    );
+});
+
 export {
     bookAppointment,
     getPatientAppointments,
     getDoctorAppointments,
-    updateAppointmentStatus
+    updateAppointmentStatus,
+    getDoctorAvailableSlots
 };
