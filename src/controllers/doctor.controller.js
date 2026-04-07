@@ -13,7 +13,7 @@ const updateDoctorProfile = asyncHandler(async (req, res) => {
     if (experience) updateData.experience = experience;
     if (consultationFee) updateData.consultationFee = consultationFee;
     if (bio) updateData.bio = bio;
-
+  //new:true to return the updated document
     const doctor = await Doctor.findOneAndUpdate(
         { userId: req.user._id }, // Find the profile linked to the logged-in user
         { $set: updateData },

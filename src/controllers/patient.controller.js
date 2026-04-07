@@ -41,8 +41,6 @@ const getAllDoctors = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, doctors, "Doctors fetched successfully"));
 });
-
-
 const getDoctorDetails = asyncHandler(async (req, res) => {
   const { doctorId } = req.params;
 
@@ -59,5 +57,4 @@ const getDoctorDetails = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, doctor, "Doctor details fetched successfully"));
 });
-
 export { getAllDoctors, getDoctorDetails };

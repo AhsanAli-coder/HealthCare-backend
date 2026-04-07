@@ -15,8 +15,9 @@ connectDB()
     //   console.log(`⚙️   Server is running at port : ${process.env.PORT}`);
     //   console.log(`🔌 Socket.IO is active and listening for connections`);
     // });
-    server.listen(process.env.PORT || 8000, () => {
-      console.log(`⚙️   Server is running at port : ${process.env.PORT}`);
+    const port = Number(process.env.PORT || 9000);
+    server.listen(port, () => {
+      console.log(`⚙️   Server is running at port : ${port}`);
       console.log(`🔌 Socket.IO is active and listening for connections`);
     });
   })

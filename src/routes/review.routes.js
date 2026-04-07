@@ -5,7 +5,9 @@ import { createReview, getDoctorReviews } from "../controllers/review.controller
 const router = Router();
 
 
-router.route("/doctor/:doctorId").get(verifyJWT, verifyRole("patient"),getDoctorReviews);
+router
+  .route("/doctor/:doctorId")
+  .get(verifyJWT, verifyRole(["patient"]), getDoctorReviews);
 router.route("/:appointmentId").post(verifyJWT,verifyRole(["patient"]), createReview);
 
 export default router;

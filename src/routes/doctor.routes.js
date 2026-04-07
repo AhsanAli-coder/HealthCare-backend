@@ -9,9 +9,6 @@ import {
 
 const router = Router();
 
-
-
-
 router.route("/me").get(verifyJWT,verifyRole(["doctor"]),getMyProfile);
 router.route("/update-profile").patch(verifyJWT,verifyRole(["doctor"]),updateDoctorProfile);
 

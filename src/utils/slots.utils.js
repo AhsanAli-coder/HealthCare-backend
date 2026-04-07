@@ -3,14 +3,18 @@ import { DateTime } from "luxon";
 const DAY_KEYS = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function normalizeDayKey(day) {
-  const d = String(day || "").trim().toLowerCase();
+  const d = String(day || "")
+    .trim()
+    .toLowerCase();
   if (!d) return null;
   if (d.length >= 3) return d.slice(0, 3);
   return d;
 }
 
 export function getDayKeyForDate({ date, timezone }) {
-  const dt = DateTime.fromFormat(String(date), "yyyy-MM-dd", { zone: timezone });
+  const dt = DateTime.fromFormat(String(date), "yyyy-MM-dd", {
+    zone: timezone,
+  });
   if (!dt.isValid) return null;
   // luxon weekday: 1=Mon..7=Sun
   const idx = dt.weekday % 7; // 0=Sun..6=Sat
@@ -22,7 +26,7 @@ export function generateSlotsForDay({
   timezone,
   availabilityForDay,
   slotMinutes = 30,
-  bufferMinutes = 0
+  bufferMinutes = 0,
 }) {
   const slots = [];
   const slotM = Number(slotMinutes);
@@ -52,7 +56,7 @@ export function generateSlotsForDay({
         startAtUtc: s.toUTC().toISO(),
         endAtUtc: e.toUTC().toISO(),
         startAtLocal: s.toISO(),
-        endAtLocal: e.toISO()
+        endAtLocal: e.toISO(),
       });
       cursor = cursor.plus({ minutes: slotM + bufferM });
     }
@@ -69,7 +73,7 @@ export function generateSlotsForDay({
   });
 }
 //remove conflicting slots
-
+//prevent double booking
 export function filterSlotsByOverlaps(slots, appointments) {
   if (!Array.isArray(slots) || !Array.isArray(appointments)) return [];
   return slots.filter((slot) => {
@@ -98,4 +102,4 @@ export function normalizeAvailabilityDay(day) {
   if (key === "sun") return "sun";
   return null;
 }
-
+ 

@@ -47,6 +47,7 @@ async function isAuthorizedForAppointment({ appointmentId, user }) {
   return { ok: true, appointment };
 }
 
+
 export const initializeSocket = (server) => {
   const io = new Server(server, {
     cors: {

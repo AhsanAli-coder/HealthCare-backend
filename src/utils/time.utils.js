@@ -46,5 +46,10 @@ export function assertValidTimeRange(startAtUtc, endAtUtc) {
   if (endAtUtc <= startAtUtc) {
     throw new ApiError(400, "end time must be after start time");
   }
+   const now = new Date();
+
+  if (startAtUtc < now) {
+    throw new ApiError(400, "start time cannot be in the past");
+  }
 }
 
