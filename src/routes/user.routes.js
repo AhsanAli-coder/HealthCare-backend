@@ -7,6 +7,9 @@ import { logoutUser } from "../controllers/user.controller.js";
 import { refreshAccessToken } from "../controllers/user.controller.js"; 
 import { updateAccountDetails } from "../controllers/user.controller.js";
 import { updateProfilePicture } from "../controllers/user.controller.js";
+import { updateTimezone } from "../controllers/user.controller.js";
+import { getCurrentUser } from "../controllers/user.controller.js";
+
 const router = Router();
 //localhost:8000/users/registers
 //localhost:8000/users/login
@@ -40,5 +43,9 @@ router.route("/update-profile-picture").patch(verifyJWT, upload.fields([
       maxCount: 1,
     },
   ]), updateProfilePicture);
+
+router.route("/timezone").patch(verifyJWT, updateTimezone);
+router.route("/me").get(verifyJWT, getCurrentUser);
+
 
 export default router;

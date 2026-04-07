@@ -24,6 +24,7 @@ export function getDayKeyForDate({ date, timezone }) {
 export function generateSlotsForDay({
   date,
   timezone,
+  displayTimezone,
   availabilityForDay,
   slotMinutes = 30,
   bufferMinutes = 0,
@@ -52,11 +53,13 @@ export function generateSlotsForDay({
     while (cursor.plus({ minutes: slotM }) <= endLocal) {
       const s = cursor;
       const e = cursor.plus({ minutes: slotM });
+      const outTz = displayTimezone || timezone;
       slots.push({
         startAtUtc: s.toUTC().toISO(),
         endAtUtc: e.toUTC().toISO(),
-        startAtLocal: s.toISO(),
-        endAtLocal: e.toISO(),
+        // Times in the timezone the frontend wants to display.
+        startAtLocal: s.setZone(outTz).toISO(),
+        endAtLocal: e.setZone(outTz).toISO(),
       });
       cursor = cursor.plus({ minutes: slotM + bufferM });
     }

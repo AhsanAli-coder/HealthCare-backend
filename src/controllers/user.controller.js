@@ -286,6 +286,23 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "profile image updated successfully"));
 });
 
+const updateTimezone = asyncHandler(async (req, res) => {
+  const { timezone } = req.body;
+  if (!timezone || !String(timezone).trim()) {
+    throw new ApiError(400, "timezone is required");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: { timezone: String(timezone).trim() } },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Timezone updated successfully"));
+});
+
 export {
   registerUser,
   loginUser,
@@ -294,5 +311,6 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
-  updateProfilePicture
+  updateProfilePicture,
+  updateTimezone
 };

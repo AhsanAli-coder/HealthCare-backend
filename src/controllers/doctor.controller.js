@@ -49,7 +49,10 @@ const updateAvailability = asyncHandler(async (req, res) => {
 });
 
 const getMyProfile = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findOne({ userId: req.user._id }).populate("userId", "name email profilePhoto");
+  const doctor = await Doctor.findOne({ userId: req.user._id }).populate(
+    "userId",
+    "name email profilePhoto phone timezone",
+  );
 
   if (!doctor) {
     throw new ApiError(404, "Doctor profile not found");

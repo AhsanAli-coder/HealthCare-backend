@@ -72,6 +72,7 @@ const bookAppointment = asyncHandler(async (req, res) => {
         startAt: startAtUtc,
         endAt: endAtUtc,
         status: "pending", 
+        expiresAt: DateTime.utc().plus({ hours: Number(process.env.PENDING_APPOINTMENT_EXPIRES_HOURS || 24) }).toJSDate(),
         paymentStatus: "pending"
     });
 
@@ -137,7 +138,7 @@ const updateAppointmentStatus = asyncHandler(async (req, res) => {
     const { appointmentId } = req.params;
     const { status } = req.body; // Expecting: "confirmed", "rejected", "cancelled", "completed"
 
-    const validStatuses = ["confirmed", "rejected", "cancelled", "completed"];
+    const validStatuses = ["confirmed", "rejected", "cancelled", "completed", "no_show"];
     if (!validStatuses.includes(status)) {
         throw new ApiError(400, "Invalid status update");
     }
@@ -157,7 +158,7 @@ const updateAppointmentStatus = asyncHandler(async (req, res) => {
     }
 
     // Basic transition guards (applies to both roles)
-    if (["completed", "cancelled", "rejected"].includes(appointment.status)) {
+    if (["completed", "cancelled", "rejected", "no_show"].includes(appointment.status)) {
         throw new ApiError(400, `Cannot update a ${appointment.status} appointment`);
     }
 
@@ -198,9 +199,15 @@ const updateAppointmentStatus = asyncHandler(async (req, res) => {
         if (status === "completed" && appointment.status !== "confirmed") {
             throw new ApiError(400, "Only confirmed appointments can be completed");
         }
+        if (status === "no_show" && appointment.status !== "confirmed") {
+            throw new ApiError(400, "Only confirmed appointments can be marked as no-show");
+        }
     }
 
     appointment.status = status;
+    if (status === "confirmed" || status === "rejected") {
+        appointment.expiresAt = undefined;
+    }
     await appointment.save();
 
     // Notify the other side about status change
@@ -237,14 +244,21 @@ const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
     if (!doctorId) throw new ApiError(400, "doctorId is required");
     if (!date) throw new ApiError(400, "date is required (YYYY-MM-DD)");
 
-    const timezone = tz || req.user?.timezone || "UTC";
-    const dayKey = getDayKeyForDate({ date, timezone });
-    if (!dayKey) throw new ApiError(400, "Invalid date format. Expected YYYY-MM-DD");
+    // Patient timezone is only for display (frontend)
+    const patientTz = tz || req.user?.timezone || "UTC";
 
-    const doctor = await Doctor.findById(doctorId);
+    // Doctor timezone is for interpreting availability "10:00–14:00"
+    const doctor = await Doctor.findById(doctorId).populate({
+        path: "userId",
+        select: "timezone"
+    });
     if (!doctor || !doctor.isApproved) {
         throw new ApiError(404, "Doctor not found or not approved");
     }
+    const doctorTz = doctor?.userId?.timezone || "UTC";
+
+    const dayKey = getDayKeyForDate({ date, timezone: doctorTz });
+    if (!dayKey) throw new ApiError(400, "Invalid date format. Expected YYYY-MM-DD");
 
     const availabilityForDay = (doctor.availability || []).filter((a) => {
         const normalized = normalizeAvailabilityDay(a.day);
@@ -253,7 +267,8 @@ const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
 
     const allSlots = generateSlotsForDay({
         date,
-        timezone,
+        timezone: doctorTz, // interpret doctor availability in doctor timezone
+        displayTimezone: patientTz, // return local strings in patient timezone
         availabilityForDay,
         slotMinutes: slotMinutes ?? 30,
         bufferMinutes: bufferMinutes ?? 0
@@ -264,7 +279,7 @@ const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
     const futureSlots = allSlots.filter((s) => DateTime.fromISO(s.startAtUtc, { zone: "utc" }) > nowUtc);
 
     // Fetch doctor's existing appointments for that UTC day range
-    const dayStartUtc = DateTime.fromFormat(date, "yyyy-MM-dd", { zone: timezone }).startOf("day").toUTC();
+    const dayStartUtc = DateTime.fromFormat(date, "yyyy-MM-dd", { zone: doctorTz }).startOf("day").toUTC();
     const dayEndUtc = dayStartUtc.plus({ days: 1 });
 
     const existing = await Appointment.find({
@@ -279,7 +294,16 @@ const getDoctorAvailableSlots = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(
             200,
-            { doctorId, date, timezone, dayKey, slotMinutes: Number(slotMinutes ?? 30), bufferMinutes: Number(bufferMinutes ?? 0), slots: availableSlots },
+            {
+                doctorId,
+                date,
+                doctorTimezone: doctorTz,
+                patientTimezone: patientTz,
+                dayKey,
+                slotMinutes: Number(slotMinutes ?? 30),
+                bufferMinutes: Number(bufferMinutes ?? 0),
+                slots: availableSlots
+            },
             "Available slots fetched successfully"
         )
     );

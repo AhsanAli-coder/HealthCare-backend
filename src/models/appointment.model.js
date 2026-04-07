@@ -46,8 +46,14 @@ const appointmentSchema = new Schema(
 
     status: {
       type: String,
-      enum: ["pending", "confirmed", "rejected", "completed", "cancelled"],
+      enum: ["pending", "confirmed", "rejected", "completed", "cancelled", "no_show"],
       default: "pending"
+    },
+
+    // Doctor must accept/reject within timeframe
+    expiresAt: {
+      type: Date,
+      index: true
     },
 
     paymentStatus: {
@@ -74,6 +80,7 @@ appointmentSchema.index(
 
 // Fast overlap queries per doctor and time range
 appointmentSchema.index({ doctorId: 1, startAt: 1, endAt: 1 });
+appointmentSchema.index({ status: 1, expiresAt: 1 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 export default Appointment;

@@ -61,6 +61,23 @@
       ]
     },
     {
+      "name": "User Settings",
+      "item": [
+        {
+          "name": "Update timezone (auth)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"timezone\": \"Asia/Karachi\"\n}" },
+            "url": { "raw": "{{baseUrl}}/users/timezone", "host": ["{{baseUrl}}"], "path": ["users", "timezone"] }
+          }
+        }
+      ]
+    },
+    {
       "name": "Patient",
       "item": [
         {
