@@ -73,10 +73,10 @@ const appointmentSchema = new Schema(
 );
 
 // prevent the duplicate booking for same slot
-appointmentSchema.index(
-  { doctorId: 1, date: 1, startTime: 1 },
-  { unique: true }
-);
+// appointmentSchema.index(
+//   { doctorId: 1, date: 1, startTime: 1 },
+//   { unique: true }
+// );
 
 // Fast overlap queries per doctor and time range
 appointmentSchema.index({ doctorId: 1, startAt: 1, endAt: 1 });
