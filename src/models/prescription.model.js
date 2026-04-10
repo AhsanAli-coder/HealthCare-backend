@@ -45,7 +45,12 @@ const prescriptionSchema = new Schema(
       trim: true
     },
 
-    pdfUrl: { type: String } 
+    pdfUrl: { type: String },
+
+    pdfCloudinaryPublicId: { type: String },
+    pdfCloudinaryResourceType: { type: String },
+    pdfCloudinaryType: { type: String },
+    pdfCloudinaryFormat: { type: String }
   },
   { timestamps: true }
 );

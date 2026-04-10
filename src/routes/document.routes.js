@@ -7,18 +7,24 @@ const router = Router();
 router.use(verifyJWT);
 
 // Patients & Doctors can upload files (using Multer middleware)
-router.route("/upload").post(upload.fields([
+router.route("/upload").post(
+  verifyRole(["patient", "doctor"]),
+  upload.fields([
     {
       name: "documentFile",
       maxCount: 1,
     },
-  ]), uploadDocument);
+  ]),
+  uploadDocument
+);
 
 // Patients get their own, Doctors must provide the patient ID
 router.route("/patient").get(verifyRole(["patient"]), getPatientDocuments);
 router.route("/patient/:patientId").get(verifyRole(["doctor"]), getPatientDocuments);
 
-// Open/download via short-lived signed URL
-router.route("/:documentId/signed-url").get(getDocumentSignedUrl);
+// Open/download via short-lived signed URL (patient or doctor only)
+router
+  .route("/:documentId/signed-url")
+  .get(verifyRole(["patient", "doctor"]), getDocumentSignedUrl);
 
 export default router;
