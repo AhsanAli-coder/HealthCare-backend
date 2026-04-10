@@ -22,6 +22,25 @@ const documentSchema = new Schema(
       type: String,
       required: true
     }, // Cloudinary / AWS URL
+
+    cloudinaryPublicId: {
+      type: String,
+      index: true
+    },
+
+    cloudinaryResourceType: {
+      type: String,
+      enum: ["image", "video", "raw"]
+    },
+
+    cloudinaryType: {
+      type: String
+    },
+
+    cloudinaryFormat: {
+      type: String
+    },
+
     fileType: {
       type: String,
       enum: ["pdf", "jpg", "png", "jpeg"],
