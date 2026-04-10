@@ -5,6 +5,7 @@ import {
   approveDoctor,
   getDashboardKPIs,
   listPendingDoctors,
+  listUsers,
   suspendUser,
 } from "../controllers/admin.controller.js";
 
@@ -15,6 +16,7 @@ router.route("/dashboard/kpis").get(getDashboardKPIs);
 router.route("/doctors/pending").get(listPendingDoctors);
 router.route("/doctors/:doctorId/approve").patch(approveDoctor);
 
+router.route("/users").get(listUsers);
 router.route("/users/:userId/suspend").patch(suspendUser);
 router.route("/users/:userId/activate").patch(activateUser);
 

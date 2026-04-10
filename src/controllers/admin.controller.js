@@ -89,11 +89,30 @@ const activateUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "User activated successfully"));
 });
 
+/** List patients/doctors for admin moderation (FR-009). */
+const listUsers = asyncHandler(async (req, res) => {
+  const { role } = req.query;
+  const filter = { role: { $in: ["patient", "doctor"] } };
+  if (role === "patient" || role === "doctor") {
+    filter.role = role;
+  }
+
+  const users = await User.find(filter)
+    .select("-password -refreshToken")
+    .sort({ createdAt: -1 })
+    .limit(500);
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched successfully"));
+});
+
 export {
   getDashboardKPIs,
   listPendingDoctors,
   approveDoctor,
   suspendUser,
   activateUser,
+  listUsers,
 };
 
