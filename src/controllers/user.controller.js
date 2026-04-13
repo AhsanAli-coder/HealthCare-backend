@@ -259,15 +259,16 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 });
 
 const updateProfilePicture = asyncHandler(async (req, res) => {
-  const profilePictureLocalPath = req.file?.path;
+  const file = req.files?.profilePhoto?.[0];
+  const localPath = file?.path;
 
-  if (!profilePictureLocalPath) {
+  if (!localPath) {
     throw new ApiError(400, "Profile picture file is missing");
   }
 
-  const profilePicture = await uploadOnCloudinary(profilePictureLocalPath);
+  const uploaded = await uploadOnCloudinary(localPath);
 
-  if (!profilePicture.url) {
+  if (!uploaded?.url) {
     throw new ApiError(400, "Error while uploading profile picture");
   }
 
@@ -275,7 +276,7 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
     req.user?._id,
     {
       $set: {
-        profilePicture: profilePicture.url,
+        profilePhoto: uploaded.url,
       },
     },
     { new: true }

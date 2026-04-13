@@ -7,7 +7,7 @@ const router = Router();
 
 router
   .route("/doctor/:doctorId")
-  .get(verifyJWT, verifyRole(["patient"]), getDoctorReviews);
+  .get(verifyJWT, verifyRole(["patient", "doctor"]), getDoctorReviews);
 router.route("/:appointmentId").post(verifyJWT,verifyRole(["patient"]), createReview);
 
 export default router;

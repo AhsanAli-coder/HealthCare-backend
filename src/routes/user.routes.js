@@ -9,6 +9,7 @@ import { updateAccountDetails } from "../controllers/user.controller.js";
 import { updateProfilePicture } from "../controllers/user.controller.js";
 import { updateTimezone } from "../controllers/user.controller.js";
 import { getCurrentUser } from "../controllers/user.controller.js";
+import { changeCurrentPassword } from "../controllers/user.controller.js";
 
 const router = Router();
 //localhost:8000/users/registers
@@ -45,6 +46,7 @@ router.route("/update-profile-picture").patch(verifyJWT, upload.fields([
   ]), updateProfilePicture);
 
 router.route("/timezone").patch(verifyJWT, updateTimezone);
+router.route("/change-password").patch(verifyJWT, changeCurrentPassword);
 router.route("/me").get(verifyJWT, getCurrentUser);
 
 

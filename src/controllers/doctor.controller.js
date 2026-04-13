@@ -5,14 +5,22 @@ import { Doctor } from "../models/doctor.model.js";
 
 // 1. Update Profile (Experience, Bio, Fees)
 const updateDoctorProfile = asyncHandler(async (req, res) => {
-    const { specialization, experience, consultationFee, bio } = req.body ;
-          console.log("req.body", req.body) ;
-    // Validation: Only update what is provided
+    const { specialization, experience, consultationFee, bio } = req.body;
     const updateData = {};
-    if (specialization) updateData.specialization = specialization;
-    if (experience) updateData.experience = experience;
-    if (consultationFee) updateData.consultationFee = consultationFee;
-    if (bio) updateData.bio = bio;
+    if (specialization != null && String(specialization).trim()) {
+      updateData.specialization = String(specialization).trim();
+    }
+    if (experience != null && experience !== "") {
+      const n = Number(experience);
+      if (!Number.isNaN(n) && n >= 0) updateData.experience = n;
+    }
+    if (consultationFee != null && consultationFee !== "") {
+      const n = Number(consultationFee);
+      if (!Number.isNaN(n) && n >= 0) updateData.consultationFee = n;
+    }
+    if (typeof bio === "string") {
+      updateData.bio = bio.trim();
+    }
   //new:true to return the updated document
     const doctor = await Doctor.findOneAndUpdate(
         { userId: req.user._id }, // Find the profile linked to the logged-in user

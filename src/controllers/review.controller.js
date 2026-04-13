@@ -75,6 +75,13 @@ const createReview = asyncHandler(async (req, res) => {
 const getDoctorReviews = asyncHandler(async (req, res) => {
     const { doctorId } = req.params;
 
+    if (req.user.role === "doctor") {
+        const doctor = await Doctor.findOne({ userId: req.user._id });
+        if (!doctor || String(doctor._id) !== String(doctorId)) {
+            throw new ApiError(403, "You can only view your own reviews");
+        }
+    }
+
     const reviews = await Review.find({ doctorId })
         .populate("patientId", "name profilePhoto") 
         .sort({ createdAt: -1 }); 

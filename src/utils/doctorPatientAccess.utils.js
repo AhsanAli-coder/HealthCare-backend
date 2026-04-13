@@ -43,3 +43,4 @@ export async function assertPatientUserExists(patientId) {
   }
   return { ok: true, user };
 }
+ 
